@@ -6,7 +6,9 @@ import requests
 import json
 import re
 import csv
+import sys
 
+dell_url = 'https://www.dell.com/support/home/en-il'
 # Regex pattern to match the serial number in the returned URL
 pattern = r"serialnumber/(\w+)/"
 
@@ -14,7 +16,8 @@ pattern = r"serialnumber/(\w+)/"
 print('Trying to read cookies from Chrome browser')
 cookies = browser_cookie3.chrome(domain_name='dell.com')
 if not cookies:
-    raise RuntimeError("Cannot get Cookie Jar for Dell.com from Chrome, Please open Chrome and login to Dell https://www.dell.com/support/home/en-il")
+    raise RuntimeError(
+        "Cannot get Cookie Jar for Dell.com from Chrome, Please open Chrome and login to Dell %s" % dell_url)
 
 # Base URL for Dell (not used directly in this script)
 dell_url = 'https://www.dell.com/en-il/lp'
@@ -50,8 +53,10 @@ def send_request(s_tag):
 
     # Send the POST request to the Dell website with the cookies and headers
     response = requests.post(url, headers=headers, data=payload, cookies=cookies)
+    if response.status_code == 403:
+        raise RuntimeError(
+            "Cannot authenticate to Dell.com, Please open Chrome and login to Dell https://www.dell.com/support/home/en-il")
     response.raise_for_status()  # Raise an error if the request was unsuccessful
-
     return response.json()  # Return the JSON response
 
 
@@ -74,9 +79,15 @@ def main():
             data = send_request(stag)
             sn = parseSN(data['LookupResults'][0]['TargetUrl'])
             results.append([stag, sn])
+
+        except RuntimeError as e:
+            # If a RuntimeError occurs, print the message and exit the script
+            print(f"An error occurred: {e}")
+            sys.exit(1)  # Exit the script with a status code of 1 (indicating an error)
         except Exception as e:
-            # Handle any errors, such as invalid service tags or failed requests
+            # Handle any other errors, such as invalid service tags or failed requests
             print(f"An error occurred with service tag {stag}: {e}")
+            results.append([stag, 'ERROR'])
 
     # Print the results in a table format
     print("\nService Tag\t\tSerial Number")
