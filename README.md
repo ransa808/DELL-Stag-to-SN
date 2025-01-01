@@ -1,6 +1,6 @@
 # DELL Service Tag to Serial Number Converter
 
-This script allows you to convert Dell service tags to their corresponding serial numbers by querying Dell's support website. Please note that this script is dependent on Dell’s website structure, and any changes to the website might require updates to the script.
+This script allows you to convert Dell service tags to their corresponding serial numbers by querying Dell's support website. Please note that this script is dependent on Dell’s website structure, and any changes to the website might require updates to the script, doesn't run properly on Windows (developed on Mac)
 
 ## Author
 Ran Salman
